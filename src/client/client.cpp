@@ -2,6 +2,8 @@
 
 #include "boost/program_options.hpp"
 
+#include "client_process.hpp"
+
 
 
 int parse_command_line(int& argc, const char** &argv) {
@@ -44,6 +46,7 @@ int parse_command_line(int& argc, const char** &argv) {
 
 int main(int argc, const char ** argv) {
     parse_command_line(argc, argv);
+    client_process();
     return 0;
 }
 

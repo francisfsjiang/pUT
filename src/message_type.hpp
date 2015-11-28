@@ -1,6 +1,8 @@
 #ifndef PUT_MESSAGE_TYPE_HPP
 #define PUT_MESSAGE_TYPE_HPP
 
+#include <cstdint>
+
 namespace put {
 
 enum MESSAGE_TYPE {
@@ -30,14 +32,24 @@ struct MsgNew {
 struct MsgDataReq {
     MsgCommonHeader header;
     uint32_t block_num;
-    uint64_t block_pos[];
+    uint32_t* block_pos_arr;
 };
 
 struct MsgDataRep {
     MsgCommonHeader header;
+    uint32_t block_pos;
+    char* buf;
+};
+
+struct MsgDataCheck {
 
 };
 
+struct MsgClose {
+
+};
+
+#pragma pack(pop)
 
 }
 
