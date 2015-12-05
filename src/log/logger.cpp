@@ -54,9 +54,6 @@ void Logger::update_header(LogLevel log_level) {
         gmtime_r(&(time_timeval_now_.tv_sec), &time_cached_tm_);
     }
 
-
-
-
     snprintf(header_buf_,
              sizeof(header_buf_),
              "%6d %4d%02d%02d %02d:%02d:%02d.%06d [%-5s] ",
