@@ -1,6 +1,7 @@
 #ifndef PUT_LOG_LOG_STREAM_HPP
 #define PUT_LOG_LOG_STREAM_HPP
 
+#include <iosfwd>
 #include "log/log_output.hpp"
 
 namespace put { namespace log {
@@ -15,6 +16,7 @@ public:
 
     LogStream& operator << (const char*);
     LogStream& operator << (const int&);
+    LogStream& operator << (const std::string&);
 
 private:
    LogOutput* output_;

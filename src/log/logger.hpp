@@ -32,7 +32,7 @@ public:
         LogStream stream = LogStream(output_);
         update_header(log_level);
         stream.write_bytes(header_buf_, sizeof(header_buf_));
-        stream << filename << ":" << line;
+        stream << filename << "@" << line << " : ";
 
         return stream;
     }

@@ -2,6 +2,9 @@
 #include <fstream>
 
 #include <vector>
+#include <string>
+#include <cstdlib>
+#include <map>
 
 #include <boost/program_options.hpp>
 
@@ -10,24 +13,46 @@
 #include "inet_address.hpp"
 #include "log/logger.hpp"
 
+const int k_HELP_DESC_NUM = 11;
+
+const char* k_HELP_DESC[k_HELP_DESC_NUM][2] = {
+        {"h,help",                        "help message"                  },
+        {"config-file",                 "set compression level"         },
+        {"client.bind_ip",              "set client's ip bind address"  },
+        {"client.bind_port",            "set client's ip bind address"  },
+        {"client.data_block_size",      "set client's ip bind address"  },
+        {"client.data_check",           "set client's ip bind address"  },
+        {"client.data_check_method",    "set client's ip bind address"  },
+        {"server.ip",                   "set client's ip bind address"  },
+        {"server.port",                 "set client's ip bind address"  },
+        {"server.send_to_ip",           "set client's ip bind port"     },
+        {"server.send_to_port",         "set client's ip bind port"     },
+};
+
+void parse_variables_to_map(std::map<std::string, std::string>& m, const boost::program_options::variables_map& vm) {
+    for(int i = 0; i < k_HELP_DESC_NUM; ++i) {
+        if (vm.count(k_HELP_DESC[i][0])) {
+            m[k_HELP_DESC[i][0]] = vm[k_HELP_DESC[i][0]].as<std::string>();
+        }
+    }
+}
 
 int parse_cfg(int& argc, const char** &argv) {
 
 
-
     boost::program_options::options_description desc("Allowed options");
     desc.add_options()
-            ("help,h", "help message")
-            ("config-file",              boost::program_options::value<std::string>(), "set compression level");
-//            ("client.bind_ip",           boost::program_options::value<std::string>(), "set client's ip bind address")
-//            ("client.bind_port",         boost::program_options::value<int>(),         "set client's ip bind address")
-//            ("client.data_block_size",   boost::program_options::value<int>(),         "set client's ip bind address")
-//            ("client.data_check",        boost::program_options::value<bool>(),        "set client's ip bind address")
-//            ("client.data_check_method", boost::program_options::value<std::string>(), "set client's ip bind address")
-//            ("server.ip",                boost::program_options::value<std::string>(), "set client's ip bind address")
-//            ("server.port",              boost::program_options::value<int>(),         "set client's ip bind address")
-//            ("server.send_to_ip",        boost::program_options::value<std::string>(), "set client's ip bind port")
-//            ("server.send_to_port",      boost::program_options::value<int>(),         "set client's ip bind port");
+            (k_HELP_DESC[0 ][0] , k_HELP_DESC[0][1])
+            (k_HELP_DESC[1 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[0 ][1])
+            (k_HELP_DESC[2 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[1 ][1])
+            (k_HELP_DESC[3 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[2 ][1])
+            (k_HELP_DESC[4 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[3 ][1])
+            (k_HELP_DESC[5 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[4 ][1])
+            (k_HELP_DESC[6 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[5 ][1])
+            (k_HELP_DESC[7 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[6 ][1])
+            (k_HELP_DESC[8 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[7 ][1])
+            (k_HELP_DESC[9 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[8 ][1])
+            (k_HELP_DESC[10][0], boost::program_options::value<std::string>(), k_HELP_DESC[9 ][1]);
     try {
         boost::program_options::variables_map vm;
         boost::program_options::store(
@@ -41,18 +66,21 @@ int parse_cfg(int& argc, const char** &argv) {
             return 0;
         }
 
-        boost::program_options::variables_map config_vm;
+        std::map<std::string, std::string> parsed_cfg;
+
         if (vm.count("config-file")) {
-            std::cout << vm["config-file"].as<std::string>();
+            boost::program_options::variables_map config_vm;
 
             std::ifstream config_file(vm["config-file"].as<std::string>());
             boost::program_options::store(
                     boost::program_options::parse_config_file(config_file, desc), config_vm
             );
-            config_file.close();
 
             boost::program_options::notify(config_vm);
 
+            config_file.close();
+
+            parse_variables_to_map(parsed_cfg, config_vm);
         }
         else {
             std::cerr << "error: config-file not set" << std::endl;
@@ -60,21 +88,27 @@ int parse_cfg(int& argc, const char** &argv) {
             return -1;
         }
 
+        parse_variables_to_map(parsed_cfg, vm);
+
+        for(int i = 1; i < k_HELP_DESC_NUM; ++i) {
+                LOG_INFO << k_HELP_DESC[i][0] << " : " << parsed_cfg[k_HELP_DESC[i][0]];
+        }
+
         put::c_cfg = new put::ClientCfg(
                 put::InetAddress(
-                        config_vm["client.bind_ip"].as<std::string>().c_str(),
-                        static_cast<in_port_t >(config_vm["client.bind_port"].as<int>())
+                        parsed_cfg["client.bind_ip"].c_str(),
+                        static_cast<in_port_t >(atoi(parsed_cfg["client.bind_port"].c_str()))
                 ),
-                config_vm["client.data_block_size"].as<int>(),
-                config_vm["client.data_check"].as<bool>(),
-                config_vm["client.data_check_method"].as<std::string>(),
+                atoi(parsed_cfg["client.data_block_size"].c_str()),
+                atoi(parsed_cfg["client.data_check"].c_str()),
+                parsed_cfg["client.data_check_method"],
                 put::InetAddress(
-                        config_vm["client.bind_ip"].as<std::string>().c_str(),
-                        static_cast<in_port_t >(config_vm["client.bind_port"].as<int>())
+                        parsed_cfg["server.ip"].c_str(),
+                        static_cast<in_port_t >(atoi(parsed_cfg["server.port"].c_str()))
                 ),
                 put::InetAddress(
-                        config_vm["client.bind_ip"].as<std::string>().c_str(),
-                        static_cast<in_port_t >(config_vm["client.bind_port"].as<int>())
+                        parsed_cfg["server.send_to_ip"].c_str(),
+                        static_cast<in_port_t >(atoi(parsed_cfg["server.send_to_port"].c_str()))
                 )
 
         );
@@ -82,7 +116,7 @@ int parse_cfg(int& argc, const char** &argv) {
         return 0;
     }
     catch(std::exception& e) {
-        std::cerr << "error: " << e.what() << std::endl;
+        std::cerr << "Error value: " << e.what() << std::endl;
         std::cerr << desc << std::endl;
         return -1;
     }
@@ -94,7 +128,7 @@ int parse_cfg(int& argc, const char** &argv) {
 
 
 int main(int argc, const char ** argv) {
-    LOG_TRACE << "Program Start";
+    LOG_TRACE << "Client Start";
     parse_cfg(argc, argv);
     client_process();
     return 0;

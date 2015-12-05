@@ -1,31 +1,23 @@
 #include "log/logger.hpp"
 
-#include <sys/types.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
-#include <unistd.h>
-#include <thread>
-
-#include <iostream>
 
 #include "log/defalut_log_output.hpp"
 
 namespace put{ namespace log {
 
-int gettid()
+pid_t gettid()
 {
-    std::thread::id this_id = std::this_thread::get_id();
 #if defined(__linux__)
 
-    int t = static_cast<pid_t>(::syscall(SYS_gettid));
+    return static_cast<pid_t>(::syscall(SYS_gettid));
 
 #elif defined(__unix__) || defined(__MACH__)
 
-    int t = static_cast<pid_t>(::syscall(SYS_thread_selfid));
+    return static_cast<pid_t>(::syscall(SYS_thread_selfid));
 
 #endif
-    std::cout << this_id << t << std::endl;
-    return t;
 }
 
 
@@ -67,7 +59,7 @@ void Logger::update_header(LogLevel log_level) {
 
     snprintf(header_buf_,
              sizeof(header_buf_),
-             "%06d %4d%02d%02d %02d:%02d:%02d.%06d [%-5s] ",
+             "%6d %4d%02d%02d %02d:%02d:%02d.%06d [%-5s] ",
              g_CACHED_TID,
              time_cached_tm_.tm_year + 1900,
              time_cached_tm_.tm_mon + 1,
@@ -75,7 +67,7 @@ void Logger::update_header(LogLevel log_level) {
              time_cached_tm_.tm_hour,
              time_cached_tm_.tm_min,
              time_cached_tm_.tm_sec,
-             time_timeval_now_.tv_usec,
+             static_cast<int>(time_timeval_now_.tv_usec),
              g_LogLevelName[log_level]
 
     );

@@ -1,5 +1,6 @@
 #include "log/log_stream.hpp"
 
+#include <string>
 #include <cstring>
 
 namespace put { namespace log {
@@ -26,6 +27,11 @@ LogStream& LogStream::operator<<(const int& v) {
     char buf[11];
     snprintf(buf, sizeof(buf), "%d", v);
     output_ ->append(buf, strlen(buf));
+    return *this;
+}
+
+LogStream& LogStream::operator << (const std::string& s) {
+    output_ -> append(s.data(), s.size());
     return *this;
 }
 

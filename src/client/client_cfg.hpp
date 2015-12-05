@@ -13,7 +13,7 @@ public:
     ClientCfg (
             const InetAddress&,
             const int&,
-            const bool&,
+            const int&,
             const std::string&,
             const InetAddress&,
             const InetAddress&
