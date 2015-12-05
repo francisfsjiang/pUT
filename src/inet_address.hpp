@@ -1,3 +1,6 @@
+#ifndef PUT_INET_ADDRESS_HPP
+#define PUT_INET_ADDRESS_HPP
+
 #include <string>
 
 #include <sys/socket.h>
@@ -25,3 +28,5 @@ private:
 };
 
 }
+
+#endif
