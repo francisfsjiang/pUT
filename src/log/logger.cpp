@@ -15,7 +15,15 @@ namespace put{ namespace log {
 int gettid()
 {
     std::thread::id this_id = std::this_thread::get_id();
+#if defined(__linux__)
+
+    int t = static_cast<pid_t>(::syscall(SYS_gettid));
+
+#elif defined(__unix__) || defined(__MACH__)
+
     int t = static_cast<pid_t>(::syscall(SYS_thread_selfid));
+
+#endif
     std::cout << this_id << t << std::endl;
     return t;
 }

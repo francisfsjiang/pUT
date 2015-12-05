@@ -1,5 +1,6 @@
 #include "inet_address.hpp"
 
+#include <stdexcept>
 #include <cstring>
 
 #include <arpa/inet.h>
