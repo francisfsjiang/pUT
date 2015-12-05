@@ -9,8 +9,8 @@ namespace put {
 
 
 InetAddress::InetAddress(const char *addr) {
-    address_.ss_len = sizeof(sockaddr_un);
     sockaddr_un* un_ptr = reinterpret_cast<sockaddr_un*>(&address_);
+    un_ptr -> sun_len  = sizeof(sockaddr_un);
     un_ptr -> sun_family = PF_UNIX;
     std::strcpy(un_ptr -> sun_path, addr);
 }
@@ -27,7 +27,7 @@ InetAddress::InetAddress(const char* addr, const in_port_t& port) {
             in6_ptr -> sin6_family = PF_INET6;
             in6_ptr -> sin6_addr = in6addr_any;
             in6_ptr -> sin6_port = port;
-            address_.ss_len = sizeof(sockaddr_in6);
+            in6_ptr -> sin6_len= sizeof(sockaddr_in6);
         }
     }
     else {
@@ -35,7 +35,7 @@ InetAddress::InetAddress(const char* addr, const in_port_t& port) {
         in_ptr -> sin_family = PF_INET;
         in_ptr -> sin_addr.s_addr = INADDR_ANY;
         in_ptr -> sin_port = port;
-        address_.ss_len = sizeof(sockaddr_in);
+        in_ptr -> sin_len = sizeof(sockaddr_in);
     }
 }
 
@@ -44,7 +44,7 @@ InetAddress::InetAddress(const in_port_t& port) {
     in6_ptr -> sin6_family = PF_INET6;
     in6_ptr -> sin6_addr = in6addr_any;
     in6_ptr -> sin6_port = port;
-    address_.ss_len = sizeof(sockaddr_in6);
+    in6_ptr -> sin6_len = sizeof(sockaddr_in6);
 
 }
 
