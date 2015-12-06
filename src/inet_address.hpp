@@ -17,13 +17,17 @@ public:
 
     InetAddress(const in_port_t &);
 
-    sockaddr_storage* getSockAddr();
+    sockaddr* getSockAddr();
 
     std::string toString();
+
+    sa_family_t getProtocolFamily();
+    uint32_t getAddressLen();
 
 private:
 
     struct sockaddr_storage address_;
+    uint32_t address_len_;
 
     InetAddress() = delete;
 };

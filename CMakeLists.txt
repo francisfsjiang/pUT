@@ -25,17 +25,25 @@ set(COMMON_SRC_FILES
         )
 
 set(CLIENT_SRC_FILES
-        src/client/client.cpp
-        src/client/client_process.cpp
-        src/client/client_cfg.cpp
+        src/client/main.cpp
+        src/client/cfg.cpp
+        src/client/main_process.cpp
         ${COMMON_SRC_FILES})
 
 set(SERVER_SRC_FILES
-        src/server/server.cpp
+        src/server/main.cpp
+        src/server/cfg.cpp
+        src/server/main_process.cpp
         ${COMMON_SRC_FILES})
 
 add_executable(client ${CLIENT_SRC_FILES})
 add_executable(server ${SERVER_SRC_FILES})
 
-target_link_libraries(client boost_program_options.a boost_filesystem.a)
+set(NEED_LIBRARIES
+        boost_program_options.a
+        boost_filesystem.a
+        )
+
+target_link_libraries(client ${NEED_LIBRARIES})
+target_link_libraries(server ${NEED_LIBRARIES})
 

@@ -1,8 +1,8 @@
-#include "client/client_cfg.hpp"
+#include "cfg.hpp"
 
-namespace put {
+namespace put { namespace server {
 
-ClientCfg::ClientCfg (
+ServerCfg::ServerCfg (
         const InetAddress& bind_address,
         const int&         data_block_size,
         const int&        data_check,
@@ -18,6 +18,6 @@ ClientCfg::ClientCfg (
 
 }
 
-ClientCfg* c_cfg;
+ServerCfg* c_cfg;
 
-}
+}}

@@ -1,16 +1,16 @@
-#ifndef PUT_CLIENT_CFG_HPP
-#define PUT_CLIENT_CFG_HPP
+#ifndef PUT_SERVER_CFG_HPP
+#define PUT_SERVER_CFG_HPP
 
 #include <map>
 #include <string>
 
 #include "inet_address.hpp"
 
-namespace put {
+namespace put { namespace server {
 
-class ClientCfg {
+class ServerCfg {
 public:
-    ClientCfg (
+    ServerCfg (
             const InetAddress&,
             const int&,
             const int&,
@@ -18,9 +18,9 @@ public:
             const InetAddress&,
             const InetAddress&
     );
-    ClientCfg() = delete;
-    ClientCfg(const ClientCfg&) = delete;
-    ClientCfg& operator = (const ClientCfg&) = delete;
+    ServerCfg() = delete;
+    ServerCfg(const ServerCfg&) = delete;
+    ServerCfg& operator = (const ServerCfg&) = delete;
 
     InetAddress bind_address;
     int data_block_size;
@@ -31,8 +31,8 @@ public:
 
 };
 
-extern ClientCfg* c_cfg;
+extern ServerCfg* c_cfg;
 
-}
+}}
 
-#endif //PUT_CLIENT_CFG_HPP
+#endif //PUT_Server_CFG_HPP

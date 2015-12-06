@@ -1,9 +1,10 @@
 #ifndef PUT_LOG_LOGGER_HPP
 #define PUT_LOG_LOGGER_HPP
 
-#include <string.h>
 #include <ctime>
 #include <type_traits>
+#include <cstring>
+#include <cerrno>
 
 #include "log/log_stream.hpp"
 #include "log/defalut_log_output.hpp"

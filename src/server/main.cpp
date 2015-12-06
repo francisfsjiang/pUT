@@ -8,15 +8,15 @@
 
 #include <boost/program_options.hpp>
 
-#include "client/client_process.hpp"
-#include "client/client_cfg.hpp"
+#include "main_process.hpp"
+#include "cfg.hpp"
 #include "inet_address.hpp"
 #include "log/logger.hpp"
 
 const int k_HELP_DESC_NUM = 11;
 
 const char* k_HELP_DESC[k_HELP_DESC_NUM][2] = {
-        {"h,help",                        "help message"                  },
+        {"h,help",                      "help message"                  },
         {"config-file",                 "set compression level"         },
         {"client.bind_ip",              "set client's ip bind address"  },
         {"client.bind_port",            "set client's ip bind address"  },
@@ -38,7 +38,6 @@ void parse_variables_to_map(std::map<std::string, std::string>& m, const boost::
 }
 
 int parse_cfg(int& argc, const char** &argv) {
-
 
     boost::program_options::options_description desc("Allowed options");
     desc.add_options()
@@ -94,7 +93,7 @@ int parse_cfg(int& argc, const char** &argv) {
                 LOG_INFO << k_HELP_DESC[i][0] << " : " << parsed_cfg[k_HELP_DESC[i][0]];
         }
 
-        put::c_cfg = new put::ClientCfg(
+        put::server::c_cfg = new put::server::ServerCfg(
                 put::InetAddress(
                         parsed_cfg["client.bind_ip"].c_str(),
                         static_cast<in_port_t >(atoi(parsed_cfg["client.bind_port"].c_str()))
@@ -129,8 +128,13 @@ int parse_cfg(int& argc, const char** &argv) {
 
 int main(int argc, const char ** argv) {
     LOG_TRACE << "Client Start";
-    parse_cfg(argc, argv);
-    client_process();
+    int ret;
+    ret = parse_cfg(argc, argv);
+    if (ret < 0) {
+        LOG_FATAL << "Parse Config Error";
+        exit(-1);
+    }
+    put::server::main_process();
     return 0;
 }
 
