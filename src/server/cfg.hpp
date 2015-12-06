@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 
+#include <boost/filesystem.hpp>
+
 #include "inet_address.hpp"
 
 namespace put { namespace server {
@@ -12,26 +14,18 @@ class ServerCfg {
 public:
     ServerCfg (
             const InetAddress&,
-            const int&,
-            const int&,
-            const std::string&,
-            const InetAddress&,
-            const InetAddress&
+            const boost::filesystem::path&
     );
     ServerCfg() = delete;
     ServerCfg(const ServerCfg&) = delete;
     ServerCfg& operator = (const ServerCfg&) = delete;
 
     InetAddress bind_address;
-    int data_block_size;
-    bool data_check;
-    std::string data_check_method;
-    InetAddress server_address;
-    InetAddress server_send_to_address;
+    boost::filesystem::path serve_path;
 
 };
 
-extern ServerCfg* c_cfg;
+extern ServerCfg*s_cfg;
 
 }}
 

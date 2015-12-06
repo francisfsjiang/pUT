@@ -41,6 +41,7 @@ add_executable(server ${SERVER_SRC_FILES})
 
 set(NEED_LIBRARIES
         boost_program_options.a
+        boost_system.a
         boost_filesystem.a
         )
 

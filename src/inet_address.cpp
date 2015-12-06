@@ -17,25 +17,25 @@ InetAddress::InetAddress(const char *addr) {
 }
 
 InetAddress::InetAddress(const char* addr, const in_port_t& port) {
-    int ret = inet_pton(PF_INET, addr, &address_);
+    sockaddr_in *in_ptr = reinterpret_cast<sockaddr_in*>(&address_);
+    int ret = inet_pton(PF_INET, addr, &in_ptr->sin_addr.s_addr);
     if (ret == 0) {
-        ret = inet_pton(PF_INET6, addr, &address_);
+        sockaddr_in6 *in6_ptr = reinterpret_cast<sockaddr_in6*>(&address_);
+        ret = inet_pton(PF_INET6, addr, &in6_ptr->sin6_addr);
         if (ret == 0) {
             throw std::invalid_argument(addr);
         }
         else {
-            sockaddr_in6 *in6_ptr = reinterpret_cast<sockaddr_in6*>(&address_);
             in6_ptr -> sin6_family = PF_INET6;
             in6_ptr -> sin6_addr = in6addr_any;
-            in6_ptr -> sin6_port = port;
+            in6_ptr -> sin6_port = htons(port);
             address_len_ = sizeof(sockaddr_in6);
         }
     }
     else {
-        sockaddr_in *in_ptr = reinterpret_cast<sockaddr_in*>(&address_);
         in_ptr -> sin_family = PF_INET;
         in_ptr -> sin_addr.s_addr = INADDR_ANY;
-        in_ptr -> sin_port = port;
+        in_ptr -> sin_port = htons(port);
         address_len_ = sizeof(sockaddr_in);
     }
 }
@@ -49,7 +49,7 @@ InetAddress::InetAddress(const in_port_t& port) {
 
 }
 
-sockaddr* InetAddress::getSockAddr() {
+sockaddr* InetAddress::getSockAddrPtr() {
     return reinterpret_cast<sockaddr*>(&address_);
 }
 
@@ -63,8 +63,12 @@ sa_family_t InetAddress::getProtocolFamily() {
     return reinterpret_cast<sockaddr_in6*>(&address_) -> sin6_family;
 }
 
-uint32_t InetAddress::getAddressLen() {
+socklen_t InetAddress::getAddressLen() {
     return address_len_;
+}
+
+socklen_t * InetAddress::getAddressLenPtr() {
+    return &address_len_;
 }
 
 }

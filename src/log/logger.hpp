@@ -32,7 +32,7 @@ public:
     inline LogStream stream(const char* filename, int line, const LogLevel& log_level) {
         LogStream stream = LogStream(output_);
         update_header(log_level);
-        stream.write_bytes(header_buf_, sizeof(header_buf_));
+        stream.write_bytes(header_buf_, k_HEADER_BUFFER_SIZE);
         stream << filename << "@" << line << " : ";
 
         return stream;
@@ -49,10 +49,8 @@ private:
     struct timeval time_timeval_now_;
     struct timeval time_timeval_last_;
     struct tm time_cached_tm_;
-    char header_buf_[41];
-
-
-
+    const int k_HEADER_BUFFER_SIZE = 41;
+    char header_buf_[42];
 };
 
 

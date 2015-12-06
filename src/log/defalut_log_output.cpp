@@ -6,25 +6,39 @@
 namespace put { namespace log {
 
 int DefaultLogOutput::append(const char* buf, size_t len) {
-    while(1) {
-        if (len <= k_BUFFER_SIZE) {
-            memcpy(buffer_, buf, len);
-            buffer_[len] = '\0';
-            std::cout << buffer_;
-            return 0;
-        }
-        else {
-            memcpy(buffer_, buf, k_BUFFER_SIZE);
-            buffer_[k_BUFFER_SIZE] = '\0';
-            std::cout << buffer_;
-            len -= k_BUFFER_SIZE;
-        }
+    if (len <= avail_) {
+        memcpy(cur_, buf, len);
+        cur_ += len;
+        avail_ -= len;
+        return 0;
+    }
+    else {
+        flush();
+        return append(buf, len);
     }
 }
 
+int DefaultLogOutput::add(size_t size) {
+    cur_ += size;
+    avail_ -= size;
+    return size;
+}
+
 int DefaultLogOutput::flush() {
+    *cur_ = '\0';
+    std::cout << buffer_;
+    cur_ = buffer_;
+    avail_ = k_BUFFER_SIZE;
     return 0;
 }
+
+char* DefaultLogOutput::buf() {
+    return cur_;
+}
+
+size_t DefaultLogOutput::avail() {
+    return avail_;
+};
 
 DefaultLogOutput::~DefaultLogOutput() {
 

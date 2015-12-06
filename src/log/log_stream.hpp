@@ -15,12 +15,15 @@ public:
     int write_bytes(const char*, size_t);
 
     LogStream& operator << (const char*);
-    LogStream& operator << (const int&);
     LogStream& operator << (const std::string&);
+    LogStream& operator << (const int&);
+    LogStream& operator << (const unsigned long long&);
 
 private:
-   LogOutput* output_;
+    LogOutput* output_;
 
+    template <typename T>
+    void writeInteger(T v);
 };
 
 }}

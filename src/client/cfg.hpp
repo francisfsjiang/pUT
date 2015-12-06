@@ -16,7 +16,8 @@ public:
             const int&,
             const std::string&,
             const InetAddress&,
-            const InetAddress&
+            const InetAddress&,
+            const std::string&
     );
     ClientCfg() = delete;
     ClientCfg(const ClientCfg&) = delete;
@@ -28,6 +29,7 @@ public:
     std::string data_check_method;
     InetAddress server_address;
     InetAddress server_send_to_address;
+    std::string request_file_path;
 
 };
 
