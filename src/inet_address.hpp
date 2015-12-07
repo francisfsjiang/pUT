@@ -17,13 +17,15 @@ public:
 
     InetAddress(const in_port_t &);
 
-    sockaddr* getSockAddrPtr();
+    InetAddress(const sockaddr*, socklen_t);
 
-    std::string toString();
+    const sockaddr* getSockAddrPtr() const;
 
-    sa_family_t getProtocolFamily();
-    socklen_t getAddressLen();
-    socklen_t* getAddressLenPtr();
+    std::string toString() const;
+
+    sa_family_t getProtocolFamily() const;
+    socklen_t getAddressLen() const ;
+    const socklen_t* getAddressLenPtr() const;
 
 
 private:

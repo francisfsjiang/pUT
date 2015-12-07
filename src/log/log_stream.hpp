@@ -2,6 +2,7 @@
 #define PUT_LOG_LOG_STREAM_HPP
 
 #include <iosfwd>
+#include <_types/_uint32_t.h>
 #include "log/log_output.hpp"
 
 namespace put { namespace log {
@@ -18,6 +19,9 @@ public:
     LogStream& operator << (const std::string&);
     LogStream& operator << (const int&);
     LogStream& operator << (const unsigned long long&);
+    LogStream& operator << (const unsigned long&);
+    LogStream& operator << (const unsigned int&);
+    LogStream& operator << (const long&);
 
 private:
     LogOutput* output_;

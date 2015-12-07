@@ -8,21 +8,21 @@
 
 namespace put{ namespace log {
 
+__thread int g_CACHED_TID = 0;
+
 pid_t gettid()
 {
+    if(!g_CACHED_TID){
+
 #if defined(__linux__)
-
-    return static_cast<pid_t>(::syscall(SYS_gettid));
-
+        g_CACHED_TID = static_cast<pid_t>(::syscall(SYS_gettid));
 #elif defined(__unix__) || defined(__MACH__)
-
-    return static_cast<pid_t>(::syscall(SYS_thread_selfid));
-
+        g_CACHED_TID = static_cast<pid_t>(::syscall(SYS_thread_selfid));
 #endif
+    }
+    return g_CACHED_TID;
 }
 
-
-pid_t g_CACHED_TID = gettid();
 
 Logger g_LOGGER = Logger(Logger::TRACE, new DefaultLogOutput());
 
@@ -57,8 +57,8 @@ void Logger::update_header(LogLevel log_level) {
 
     snprintf(header_buf_,
              sizeof(header_buf_),
-             "%6d %4d%02d%02d %02d:%02d:%02d.%06d [%-5s] ",
-             g_CACHED_TID,
+             "%06d %4d%02d%02d %02d:%02d:%02d.%06d [%-5s] ",
+             gettid(),
              time_cached_tm_.tm_year + 1900,
              time_cached_tm_.tm_mon + 1,
              time_cached_tm_.tm_mday,

@@ -97,5 +97,19 @@ LogStream& LogStream::operator <<(const unsigned long long& v) {
     writeInteger(v);
     return *this;
 }
+LogStream& LogStream::operator <<(const unsigned long& v) {
+    writeInteger(v);
+    return *this;
+}
+
+LogStream& LogStream::operator << (const unsigned int&v) {
+    writeInteger(v);
+    return *this;
+}
+
+LogStream& LogStream::operator << (const long&v) {
+    writeInteger(v);
+    return *this;
+}
 
 }}

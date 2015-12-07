@@ -12,7 +12,7 @@ class ClientCfg {
 public:
     ClientCfg (
             const InetAddress&,
-            const int&,
+            const size_t&,
             const int&,
             const std::string&,
             const InetAddress&,
@@ -24,7 +24,7 @@ public:
     ClientCfg& operator = (const ClientCfg&) = delete;
 
     InetAddress bind_address;
-    int data_block_size;
+    size_t data_block_size;
     bool data_check;
     std::string data_check_method;
     InetAddress server_address;

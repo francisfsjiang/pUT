@@ -64,7 +64,6 @@ extern Logger g_LOGGER;
 #define LOG_FATAL put::log::g_LOGGER.stream(__FILENAME__, __LINE__, put::log::Logger::FATAL)
 
 
-
 }}
 
 

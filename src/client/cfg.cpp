@@ -4,7 +4,7 @@ namespace put { namespace client {
 
 ClientCfg::ClientCfg (
         const InetAddress& bind_address,
-        const int&         data_block_size,
+        const size_t&         data_block_size,
         const int&         data_check,
         const std::string& data_check_method,
         const InetAddress& server_address,
