@@ -1,5 +1,6 @@
 #include "log/log_stream.hpp"
 
+#include <algorithm>
 #include <string>
 #include <cstring>
 

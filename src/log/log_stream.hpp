@@ -1,8 +1,8 @@
 #ifndef PUT_LOG_LOG_STREAM_HPP
 #define PUT_LOG_LOG_STREAM_HPP
 
-#include <iosfwd>
-#include <_types/_uint32_t.h>
+#include <string>
+
 #include "log/log_output.hpp"
 
 namespace put { namespace log {

@@ -38,7 +38,7 @@ char* DefaultLogOutput::buf() {
 
 size_t DefaultLogOutput::avail() {
     return avail_;
-};
+}
 
 DefaultLogOutput::~DefaultLogOutput() {
 

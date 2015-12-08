@@ -2,7 +2,6 @@
 #define PUT_LOG_LOGGER_HPP
 
 #include <ctime>
-#include <type_traits>
 #include <cstring>
 #include <cerrno>
 

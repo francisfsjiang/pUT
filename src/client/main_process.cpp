@@ -1,13 +1,16 @@
 #include "main_process.hpp"
 
-#include <cstdlib>
 #include <random>
 #include <set>
 #include <thread>
+#include <mutex>
+#include <cstdlib>
+
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <boost/filesystem.hpp>
 #include <sys/fcntl.h>
+#include <arpa/inet.h>
+
+#include <boost/filesystem.hpp>
 
 #include "cfg.hpp"
 #include "message_type.hpp"
@@ -87,7 +90,7 @@ int data_request_process(const int& socket_fd) {
             msg_data_req->arr_len = arr_len;
             send_data_req(socket_fd, msg_data_req);
         }
-        sleep(10)
+        break;
 
     }
 
