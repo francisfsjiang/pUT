@@ -210,7 +210,9 @@ int thread_process(int socket_fd) {
             return -1;
         }
 
+        InetAddress temp_addr(reinterpret_cast<sockaddr*>(&sock_addr), sock_addr_len);
         LOG_TRACE << "Receive msg size: " << received_size ;
+        LOG_TRACE << "From : " << temp_addr.toString();
 
         switch(msg_ptr->msg_type) {
             case MSG_REG_REQ:

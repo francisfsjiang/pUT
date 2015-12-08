@@ -198,16 +198,16 @@ int client_main_process() {
         LOG_FATAL << "Create socket failed. " << strerror(errno);
         exit(-1);
     }
-
-    int ret = bind(
-            client_socket,
-            c_cfg->bind_address.getSockAddrPtr(),
-            c_cfg -> bind_address.getAddressLen()
-    );
-    if (ret < 0) {
-        LOG_FATAL << "Socket bind failed. " << strerror(errno);
-        exit(-1);
-    }
+    int ret;
+//    int ret = bind(
+//            client_socket,
+//            c_cfg->bind_address.getSockAddrPtr(),
+//            c_cfg -> bind_address.getAddressLen()
+//    );
+//    if (ret < 0) {
+//        LOG_FATAL << "Socket bind failed. " << strerror(errno);
+//        exit(-1);
+//    }
 
     g_CLIENT_ID = generate_client_id();
 
