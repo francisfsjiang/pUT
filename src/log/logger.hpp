@@ -48,8 +48,8 @@ private:
     struct timeval time_timeval_now_;
     struct timeval time_timeval_last_;
     struct tm time_cached_tm_;
-    static const int k_HEADER_BUFFER_SIZE = 41;
-    char header_buf_[k_HEADER_BUFFER_SIZE + 2];
+    static const int k_HEADER_BUFFER_SIZE = 40;
+    char header_buf_[k_HEADER_BUFFER_SIZE + 3];
 };
 
 
