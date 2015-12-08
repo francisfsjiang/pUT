@@ -46,11 +46,12 @@ int new_client_process(
         const sockaddr_storage* sock_addr,
         socklen_t sock_len
 ) {
-    g_CLIENT_MAP_LOCK.lock();
+    std::lock_guard<std::mutex> l(g_CLIENT_MAP_LOCK);
 
     LOG_TRACE << "Get new client, from: " << InetAddress(reinterpret_cast<const sockaddr*>(sock_addr), sock_len).toString();
     LOG_TRACE << "Client id: "            << msg.client_id;
-    LOG_TRACE << "Sever sent to: "        << msg.server_send_to.toString();
+    LOG_TRACE << "Sever sent to addr: "        << msg.server_send_to_addr;
+    LOG_TRACE << "Sever sent to port: "        << msg.server_send_to_port;
     LOG_TRACE << "Request file: "         << msg.request_file;
     LOG_TRACE << "Client remain now: "    << g_CLIENT_MAP.size();
 
@@ -59,6 +60,13 @@ int new_client_process(
 
     MsgRegRsp msg_reg_rsp;
     msg_reg_rsp.msg_type = MSG_REG_RSP;
+
+    ClientInfo client_info(
+            msg.client_id,
+            InetAddress(msg.server_send_to_addr, msg.server_send_to_port),
+            target_file_path
+    );
+
     if (!boost::filesystem::exists(target_file_path) ||
             !boost::filesystem::is_regular_file(target_file_path)) {
 
@@ -74,22 +82,17 @@ int new_client_process(
         msg_reg_rsp.file_size = boost::filesystem::file_size(target_file_path);
         g_CLIENT_MAP.insert(std::make_pair(
                 msg.client_id,
-                ClientInfo(
-                        msg.client_id,
-                        msg.server_send_to,
-                        target_file_path
-                )
+                client_info
         ));
     }
-    g_CLIENT_MAP_LOCK.unlock();
 
     sendto(
             socket_fd,
             reinterpret_cast<void*>(&msg_reg_rsp),
             sizeof(msg_reg_rsp),
             0,
-            msg.server_send_to.getSockAddrPtr(),
-            msg.server_send_to.getAddressLen()
+            client_info.server_send_to.getSockAddrPtr(),
+            client_info.server_send_to.getAddressLen()
     );
     return 0;
 }

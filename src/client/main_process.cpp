@@ -215,11 +215,13 @@ int client_main_process() {
     MsgRegReq* msg_reg_req = reinterpret_cast<MsgRegReq*>(g_MSG_BUFFER);
     msg_reg_req->msg_type = MSG_REG_REQ;
     msg_reg_req->client_id = g_CLIENT_ID;
-    msg_reg_req->server_send_to = c_cfg->server_send_to_address;
+    strcpy(msg_reg_req->server_send_to_addr, c_cfg->server_send_to_address.getAddrString().c_str());
+    msg_reg_req->server_send_to_port = c_cfg->server_send_to_address.getPort();
     strcpy(msg_reg_req->request_file, c_cfg->request_file_path.c_str());
 
     LOG_INFO << "Client id: " << msg_reg_req->client_id;
-    LOG_INFO << "Server send to: " << msg_reg_req->server_send_to.toString();
+    LOG_INFO << "Server send to addr: " << msg_reg_req->server_send_to_addr;
+    LOG_INFO << "Server send to port: " << msg_reg_req->server_send_to_port;
 
     ssize_t sended_size = sendto(
             client_socket,

@@ -22,6 +22,8 @@ public:
     const sockaddr* getSockAddrPtr() const;
 
     std::string toString() const;
+    std::string getAddrString() const;
+    in_port_t getPort() const;
 
     sa_family_t getProtocolFamily() const;
     socklen_t getAddressLen() const ;
@@ -36,6 +38,7 @@ private:
     InetAddress() = delete;
 };
 
+const int k_MAX_INET_ADDRESS_LEN = 46;
 }
 
 #endif

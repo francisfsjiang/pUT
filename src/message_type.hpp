@@ -32,7 +32,8 @@ struct Msg {
 struct MsgRegReq {
     uint8_t msg_type;
     ClientID client_id;
-    InetAddress server_send_to;
+    char server_send_to_addr[k_MAX_INET_ADDRESS_LEN];
+    in_port_t server_send_to_port;
     char request_file[128];
 };
 

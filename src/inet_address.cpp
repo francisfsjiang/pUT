@@ -8,7 +8,6 @@
 
 namespace put {
 
-const int k_MAX_INET_ADDRESS_LEN = INET6_ADDRSTRLEN;
 const int k_MAX_INET_PORT_LEN = 6;
 
 InetAddress::InetAddress(const char *addr) {
@@ -71,6 +70,30 @@ std::string InetAddress::toString() const{
         sprintf(buf + k_MAX_INET_ADDRESS_LEN, ".%d", ntohs(in6_ptr->sin6_port));
     }
     return std::string(buf) + std::string(buf+k_MAX_INET_ADDRESS_LEN);
+}
+
+std::string InetAddress::getAddrString() const{
+    char buf[k_MAX_INET_ADDRESS_LEN];
+    if (address_.ss_family == PF_INET) {
+        const sockaddr_in *in_ptr = reinterpret_cast<const sockaddr_in*>(&address_);
+        inet_ntop(address_.ss_family, &in_ptr->sin_addr, buf, sizeof(buf));
+    }
+    else {
+        const sockaddr_in6 *in6_ptr = reinterpret_cast<const sockaddr_in6*>(&address_);
+        inet_ntop(address_.ss_family, &in6_ptr->sin6_addr, buf, sizeof(buf));
+    }
+    return std::string(buf);
+}
+
+in_port_t InetAddress::getPort() const {
+    if (address_.ss_family == PF_INET) {
+        const sockaddr_in *in_ptr = reinterpret_cast<const sockaddr_in*>(&address_);
+        return ntohs(in_ptr->sin_port);
+    }
+    else {
+        const sockaddr_in6 *in6_ptr = reinterpret_cast<const sockaddr_in6*>(&address_);
+        return ntohs(in6_ptr->sin6_port);
+    }
 }
 
 sa_family_t InetAddress::getProtocolFamily() const{
