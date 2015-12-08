@@ -8,20 +8,21 @@
 namespace put {
 
 enum MESSAGE_TYPE {
-    MSG_REG_REQ,
-    MSG_REG_RSP,
-    MSG_CLIENT_CLOSE,
-    MSG_DATA_REQ,
-    MSG_DATA_RSP,
-    MSG_DATA_CHECK_REQ,
-    MSG_DATA_CHECK_RSP,
+    MSG_REG_REQ         = 0x40,
+    MSG_REG_RSP         = 0x41,
+    MSG_CLIENT_CLOSE    = 0x42,
+    MSG_DATA_REQ        = 0x43,
+    MSG_DATA_RSP        = 0x44,
+    MSG_DATA_CHECK_REQ  = 0x45,
+    MSG_DATA_CHECK_RSP  = 0x46,
 };
 
 typedef unsigned long long ClientID;
 
 const int k_MAX_MSG_BUFFER_SIZE = 2000;
 
-const int k_MAX_DATA_REQ_ARR_LEN = 250;
+const size_t k_DATA_BLOCK_SIZE = 1024;
+const int k_MAX_DATA_REQ_ARR_LEN = 125;
 //close struct padding
 
 struct Msg {
@@ -32,15 +33,14 @@ struct MsgRegReq {
     uint8_t msg_type;
     ClientID client_id;
     InetAddress server_send_to;
-    size_t data_block_size;
-    std::string request_file;
+    char request_file[128];
 };
 
 struct MsgRegRsp {
     uint8_t msg_type;
     bool reg_status;
     size_t file_size;
-    std::string error_msg;
+    char error_msg[128];
 
 };
 
@@ -53,14 +53,14 @@ struct MsgDataReq {
     uint8_t msg_type;
     ClientID client_id;
     size_t arr_len;
-    size_t* block_pos_arr;
+    size_t block_pos_arr[k_MAX_DATA_REQ_ARR_LEN];
 };
 
 struct MsgDataRsp {
     uint8_t msg_type;
     size_t block_pos;
     size_t buf_len;
-    char* buf;
+    char buf[k_DATA_BLOCK_SIZE];
 };
 
 struct MsgDataCheckReq {

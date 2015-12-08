@@ -211,21 +211,20 @@ int client_main_process() {
 
     g_CLIENT_ID = generate_client_id();
 
-    MsgRegReq msg_reg_req = {
-            MSG_REG_REQ,
-            g_CLIENT_ID,
-            c_cfg->server_send_to_address,
-            c_cfg->data_block_size,
-            c_cfg->request_file_path,
-    };
+    g_MSG_BUFFER = new char[k_MAX_MSG_BUFFER_SIZE];
+    MsgRegReq* msg_reg_req = reinterpret_cast<MsgRegReq*>(g_MSG_BUFFER);
+    msg_reg_req->msg_type = MSG_REG_REQ;
+    msg_reg_req->client_id = g_CLIENT_ID;
+    msg_reg_req->server_send_to = c_cfg->server_send_to_address;
+    strcpy(msg_reg_req->request_file, c_cfg->request_file_path.c_str());
 
-    LOG_INFO << "Client id: " << msg_reg_req.client_id;
-    LOG_INFO << "Server send to: " << msg_reg_req.server_send_to.toString();
+    LOG_INFO << "Client id: " << msg_reg_req->client_id;
+    LOG_INFO << "Server send to: " << msg_reg_req->server_send_to.toString();
 
     ssize_t sended_size = sendto(
             client_socket,
-            reinterpret_cast<void*>(&msg_reg_req),
-            sizeof(msg_reg_req),
+            msg_reg_req,
+            sizeof(MsgRegReq),
             0,
             c_cfg -> server_address.getSockAddrPtr(),
             c_cfg -> server_address.getAddressLen()
@@ -268,7 +267,7 @@ int client_main_process() {
     );
     ret = ftruncate(g_FILE_FD, msg_ptr->file_size);
 
-    for (size_t pos = 0; pos < msg_ptr->file_size; pos += c_cfg->data_block_size) {
+    for (size_t pos = 0; pos < msg_ptr->file_size; pos += k_DATA_BLOCK_SIZE) {
         g_FILE_BLOCKS_SET.insert(pos);
     }
 

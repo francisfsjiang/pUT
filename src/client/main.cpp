@@ -13,7 +13,7 @@
 #include "inet_address.hpp"
 #include "log/logger.hpp"
 
-const int k_HELP_DESC_NUM = 12;
+const int k_HELP_DESC_NUM = 11;
 
 const char* k_HELP_DESC[k_HELP_DESC_NUM][2] = {
         {"help,h",                      "help message"                  },
@@ -21,7 +21,6 @@ const char* k_HELP_DESC[k_HELP_DESC_NUM][2] = {
         {"config-file",                 "set compression level"         },
         {"client.bind_ip",              "set client's ip bind address"  },
         {"client.bind_port",            "set client's ip bind address"  },
-        {"client.data_block_size",      "set client's ip bind address"  },
         {"client.data_check",           "set client's ip bind address"  },
         {"client.data_check_method",    "set client's ip bind address"  },
         {"server.ip",                   "set client's ip bind address"  },
@@ -52,8 +51,7 @@ int parse_cfg(int& argc, const char** &argv) {
             (k_HELP_DESC[7 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[7 ][1])
             (k_HELP_DESC[8 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[8 ][1])
             (k_HELP_DESC[9 ][0], boost::program_options::value<std::string>(), k_HELP_DESC[9 ][1])
-            (k_HELP_DESC[10][0], boost::program_options::value<std::string>(), k_HELP_DESC[10][1])
-            (k_HELP_DESC[11][0], boost::program_options::value<std::string>(), k_HELP_DESC[11][1]);
+            (k_HELP_DESC[10][0], boost::program_options::value<std::string>(), k_HELP_DESC[10][1]);
     try {
         boost::program_options::variables_map vm;
         boost::program_options::store(
@@ -100,7 +98,6 @@ int parse_cfg(int& argc, const char** &argv) {
                         parsed_cfg["client.bind_ip"].c_str(),
                         static_cast<in_port_t>(atoi(parsed_cfg["client.bind_port"].c_str()))
                 ),
-                atoi(parsed_cfg["client.data_block_size"].c_str()),
                 atoi(parsed_cfg["client.data_check"].c_str()),
                 parsed_cfg["client.data_check_method"],
                 put::InetAddress(

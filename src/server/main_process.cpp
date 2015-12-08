@@ -25,16 +25,13 @@ public:
     ClientInfo(
             ClientID client_id,
             InetAddress addr,
-            size_t data_block_size,
             boost::filesystem::path file_path
     ):client_id(client_id),
       server_send_to(addr),
-      data_block_size(data_block_size),
       file_path(file_path)
     {}
     unsigned long long client_id;
     InetAddress server_send_to;
-    size_t data_block_size;
     boost::filesystem::path file_path;
 };
 
@@ -53,7 +50,6 @@ int new_client_process(
 
     LOG_TRACE << "Get new client, from: " << InetAddress(reinterpret_cast<const sockaddr*>(sock_addr), sock_len).toString();
     LOG_TRACE << "Client id: "            << msg.client_id;
-    LOG_TRACE << "Data_block_size: "      << msg.data_block_size;
     LOG_TRACE << "Sever sent to: "        << msg.server_send_to.toString();
     LOG_TRACE << "Request file: "         << msg.request_file;
     LOG_TRACE << "Client remain now: "    << g_CLIENT_MAP.size();
@@ -67,11 +63,11 @@ int new_client_process(
             !boost::filesystem::is_regular_file(target_file_path)) {
 
         msg_reg_rsp.reg_status = 0;
-        msg_reg_rsp.error_msg = "File not exists.";
+        strcpy(msg_reg_rsp.error_msg, "File not exists");
     }
     else if(g_CLIENT_MAP.find(msg.client_id) != g_CLIENT_MAP.end()) {
         msg_reg_rsp.reg_status = 0;
-        msg_reg_rsp.error_msg = "Client already exists";
+        strcpy(msg_reg_rsp.error_msg, "Client already exists");
     }
     else {
         msg_reg_rsp.reg_status = 1;
@@ -81,7 +77,6 @@ int new_client_process(
                 ClientInfo(
                         msg.client_id,
                         msg.server_send_to,
-                        msg.data_block_size,
                         target_file_path
                 )
         ));
@@ -116,7 +111,6 @@ int data_process(const int& socket_fd, MsgDataReq& msg) {
     MsgDataRsp* msg_to_send = reinterpret_cast<MsgDataRsp*>(g_MSG_BUFFER);
     msg_to_send->msg_type = MSG_DATA_RSP;
     size_t msg_to_send_size;
-    char* msg_to_send_buf = reinterpret_cast<char*>(&msg_to_send->buf);
 
     ssize_t result_size;
     off_t seek_result;
@@ -125,15 +119,19 @@ int data_process(const int& socket_fd, MsgDataReq& msg) {
             client_info.file_path.c_str(),
             O_RDONLY
     );
+    if (file_fd < 0) {
+        LOG_ERROR << "Open file failed. " << strerror(errno);
+        return -1;
+    }
 
-    size_t *block_pos_arr_ptr = reinterpret_cast<size_t*>(&(msg.block_pos_arr));
+    size_t *block_pos_arr_ptr = msg.block_pos_arr;
     size_t *block_pos_arr_end = block_pos_arr_ptr+msg.arr_len;
     for(; block_pos_arr_ptr != block_pos_arr_end; block_pos_arr_ptr += 1) {
 
         msg_to_send->block_pos = *block_pos_arr_ptr;
 
         seek_result = lseek(file_fd,
-                            static_cast<off_t >(*block_pos_arr_ptr),
+                            *block_pos_arr_ptr,
                             SEEK_SET);
         if (seek_result != static_cast<off_t>(*block_pos_arr_ptr)) {
             LOG_ERROR << "Seek failed. " << strerror(errno);
@@ -141,14 +139,14 @@ int data_process(const int& socket_fd, MsgDataReq& msg) {
         }
         result_size = read(
                 file_fd,
-                msg_to_send_buf,
-                client_info.data_block_size
+                msg_to_send->buf,
+                k_DATA_BLOCK_SIZE
         );
         if (result_size < 0) {
             LOG_ERROR << "Read error. " << strerror(errno);
         }
         msg_to_send->buf_len = static_cast<size_t>(result_size);
-        msg_to_send_size = sizeof(MsgDataRsp) + msg_to_send->buf_len * sizeof(char) - sizeof(char*);
+        msg_to_send_size = sizeof(MsgDataRsp);
         result_size = sendto(
                 socket_fd,
                 msg_to_send,

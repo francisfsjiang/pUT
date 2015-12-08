@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.2)
 project(put)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH    ${PROJECT_SOURCE_DIR}/lib)
+
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
@@ -29,18 +31,21 @@ set(CLIENT_SRC_FILES
         src/client/main.cpp
         src/client/cfg.cpp
         src/client/main_process.cpp
-        ${COMMON_SRC_FILES})
+        )
 
 set(SERVER_SRC_FILES
         src/server/main.cpp
         src/server/cfg.cpp
         src/server/main_process.cpp
-        ${COMMON_SRC_FILES})
+        )
+
+add_library(common STATIC ${COMMON_SRC_FILES})
 
 add_executable(client ${CLIENT_SRC_FILES})
 add_executable(server ${SERVER_SRC_FILES})
 
 set(NEED_LIBRARIES
+        common
         boost_program_options.a
         boost_system.a
         boost_filesystem.a
