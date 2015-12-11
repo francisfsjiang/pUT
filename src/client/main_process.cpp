@@ -189,25 +189,37 @@ int receive_thread_process(const int& socket_fd) {
 
 int client_main_process() {
 
-    int client_socket = socket(
+    int receive_socket = socket(
             c_cfg->bind_address.getProtocolFamily(),
             SOCK_DGRAM,
             0
     );
-    if (client_socket < 0) {
-        LOG_FATAL << "Create socket failed. " << strerror(errno);
+    if (receive_socket < 0) {
+        LOG_FATAL << "Create receive socket failed. " << strerror(errno);
         exit(-1);
     }
-    int ret;
-//    int ret = bind(
-//            client_socket,
-//            c_cfg->bind_address.getSockAddrPtr(),
-//            c_cfg -> bind_address.getAddressLen()
-//    );
-//    if (ret < 0) {
-//        LOG_FATAL << "Socket bind failed. " << strerror(errno);
-//        exit(-1);
-//    }
+//    int ret;
+    int ret = bind(
+            receive_socket,
+            c_cfg->bind_address.getSockAddrPtr(),
+            c_cfg -> bind_address.getAddressLen()
+    );
+    if (ret < 0) {
+        LOG_FATAL << "Receive socket bind failed. " << strerror(errno);
+        exit(-1);
+    }
+
+
+    int send_socket = socket(
+            c_cfg->server_address.getProtocolFamily(),
+            SOCK_DGRAM,
+            0
+    );
+    if (send_socket < 0) {
+        LOG_FATAL << "Create send socket failed. " << strerror(errno);
+        exit(-1);
+    }
+//    int ret;
 
     g_CLIENT_ID = generate_client_id();
 
@@ -224,22 +236,24 @@ int client_main_process() {
     LOG_INFO << "Server send to port: " << msg_reg_req->server_send_to_port;
 
     ssize_t sended_size = sendto(
-            client_socket,
+            send_socket,
             msg_reg_req,
             sizeof(MsgRegReq),
             0,
             c_cfg -> server_address.getSockAddrPtr(),
             c_cfg -> server_address.getAddressLen()
     );
-    if( sended_size < 0 || sended_size != sizeof(msg_reg_req)) {
+    if( sended_size < 0) {
         LOG_FATAL << "Reg msg send error. " << strerror(errno);
+        exit(-1);
     }
+
 
     char buf[200];
     sockaddr_storage addr_storage;
     socklen_t sock_len = sizeof(sockaddr_storage);
     ssize_t received_size = recvfrom(
-            client_socket,
+            receive_socket,
             buf,
             sizeof(buf),
             0,
@@ -269,13 +283,18 @@ int client_main_process() {
     );
     ret = ftruncate(g_FILE_FD, msg_ptr->file_size);
 
+    if (ret < 0) {
+        LOG_FATAL << "Ftruncate failed. " << strerror(errno);
+        exit(-1);
+    }
+
     for (size_t pos = 0; pos < msg_ptr->file_size; pos += k_DATA_BLOCK_SIZE) {
         g_FILE_BLOCKS_SET.insert(pos);
     }
 
     std::thread data_req_thread(
-            [client_socket](){
-                data_request_process(client_socket);
+            [send_socket](){
+                data_request_process(send_socket);
             }
     );
 
@@ -284,8 +303,8 @@ int client_main_process() {
     for (int i = 0; i < k_RECV_THREAD_NUM; ++i) {
         threads.push_back(
                 std::thread(
-                        [client_socket](){
-                            receive_thread_process(client_socket);
+                        [receive_socket](){
+                            receive_thread_process(receive_socket);
                         }
                 )
         );
