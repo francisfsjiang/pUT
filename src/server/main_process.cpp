@@ -74,8 +74,8 @@ int new_client_process(
         strcpy(msg_reg_rsp.error_msg, "File not exists");
     }
     else if(g_CLIENT_MAP.find(msg.client_id) != g_CLIENT_MAP.end()) {
-        msg_reg_rsp.reg_status = 0;
-        strcpy(msg_reg_rsp.error_msg, "Client already exists");
+        msg_reg_rsp.reg_status = 1;
+        msg_reg_rsp.file_size = boost::filesystem::file_size(target_file_path);
     }
     else {
         msg_reg_rsp.reg_status = 1;

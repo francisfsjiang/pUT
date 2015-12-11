@@ -1,5 +1,6 @@
 #include "main_process.hpp"
 
+#include <iostream>
 #include <random>
 #include <set>
 #include <thread>
@@ -90,7 +91,9 @@ int data_request_process(const int& socket_fd) {
             msg_data_req->arr_len = arr_len;
             send_data_req(socket_fd, msg_data_req);
         }
-        break;
+
+        int temp;
+        std::cin >> temp;
 
     }
 
@@ -100,9 +103,7 @@ int data_request_process(const int& socket_fd) {
 
 int receive_data_process(MsgDataRsp& msg) {
 
-    LOG_TRACE << "Get data rsp: ";
-    LOG_TRACE << "Block pos: "        << msg.block_pos;
-    LOG_TRACE << "Buffer len: "       << msg.buf_len;
+    LOG_TRACE << "get block pos: "        << msg.block_pos;
 
     {
         std::lock_guard<std::mutex> l(g_FILE_BLOCKS_SET_LOCK);
@@ -235,27 +236,29 @@ int client_main_process() {
     LOG_INFO << "Server send to addr: " << msg_reg_req->server_send_to_addr;
     LOG_INFO << "Server send to port: " << msg_reg_req->server_send_to_port;
 
-    ssize_t sended_size = sendto(
-            send_socket,
-            msg_reg_req,
-            sizeof(MsgRegReq),
-            0,
-            c_cfg -> server_address.getSockAddrPtr(),
-            c_cfg -> server_address.getAddressLen()
-    );
-    if( sended_size < 0) {
-        LOG_FATAL << "Reg msg send error. " << strerror(errno);
-        exit(-1);
+    ssize_t sended_size;
+    for (int i = 0; i < 100; ++i) {
+         sended_size = sendto(
+                send_socket,
+                msg_reg_req,
+                sizeof(MsgRegReq),
+                0,
+                c_cfg -> server_address.getSockAddrPtr(),
+                c_cfg -> server_address.getAddressLen()
+        );
+        if( sended_size < 0) {
+            LOG_FATAL << "Reg msg send error. " << strerror(errno);
+            exit(-1);
+        }
     }
 
 
-    char buf[200];
     sockaddr_storage addr_storage;
     socklen_t sock_len = sizeof(sockaddr_storage);
     ssize_t received_size = recvfrom(
             receive_socket,
-            buf,
-            sizeof(buf),
+            g_MSG_BUFFER,
+            sizeof(MsgRegRsp),
             0,
             reinterpret_cast<sockaddr*>(&addr_storage),
             &sock_len
@@ -263,7 +266,7 @@ int client_main_process() {
 
     LOG_INFO << "Receive size: " << received_size ;
 
-    MsgRegRsp* msg_ptr = reinterpret_cast<MsgRegRsp*>(buf);
+    MsgRegRsp* msg_ptr = reinterpret_cast<MsgRegRsp*>(g_MSG_BUFFER);
     LOG_INFO << "Reg Status: " << msg_ptr->reg_status;
     if (msg_ptr->reg_status != 1) {
         LOG_FATAL << "Error msg: " << msg_ptr->error_msg;
