@@ -11,6 +11,7 @@ namespace put {
 const int k_MAX_INET_PORT_LEN = 6;
 
 InetAddress::InetAddress(const char *addr) {
+    memset(&address_, 0, sizeof(address_));
     sockaddr_un* un_ptr = reinterpret_cast<sockaddr_un*>(&address_);
     un_ptr -> sun_family = PF_UNIX;
     std::strcpy(un_ptr -> sun_path, addr);
@@ -18,6 +19,7 @@ InetAddress::InetAddress(const char *addr) {
 }
 
 InetAddress::InetAddress(const char* addr, const in_port_t& port) {
+    memset(&address_, 0, sizeof(address_));
     sockaddr_in *in_ptr = reinterpret_cast<sockaddr_in*>(&address_);
     int ret = inet_pton(PF_INET, addr, &in_ptr->sin_addr.s_addr);
     if (ret != 1) {
@@ -40,6 +42,7 @@ InetAddress::InetAddress(const char* addr, const in_port_t& port) {
 }
 
 InetAddress::InetAddress(const in_port_t& port) {
+    memset(&address_, 0, sizeof(address_));
     sockaddr_in6 *in6_ptr = reinterpret_cast<sockaddr_in6*>(&address_);
     in6_ptr -> sin6_family = PF_INET6;
     in6_ptr -> sin6_addr = in6addr_any;

@@ -19,6 +19,8 @@
 
 namespace put { namespace client {
 
+bool g_FINISHED = false;
+
 __thread char* g_MSG_BUFFER;
 
 const int k_RECV_THREAD_NUM = 1;
@@ -38,24 +40,28 @@ ClientID generate_client_id() {
     return dist(rd);
 }
 
-int send_data_req(const int& socket_fd, const MsgDataReq* msg_data_req) {
+int send_data_req(const int& socket_fd, MsgDataReq* msg_data_req) {
     size_t msg_data_req_size = sizeof(MsgDataReq) + msg_data_req->arr_len * sizeof(size_t) - sizeof(size_t*);
     ssize_t send_result;
-    send_result = sendto(
-            socket_fd,
-            msg_data_req,
-            msg_data_req_size,
-            0,
-            c_cfg->server_address.getSockAddrPtr(),
-            c_cfg->server_address.getAddressLen()
-    );
+    for (int i = 0; i < 5; ++i) {
+        send_result = sendto(
+                socket_fd,
+                msg_data_req,
+                msg_data_req_size,
+                0,
+                c_cfg->server_address.getSockAddrPtr(),
+                c_cfg->server_address.getAddressLen()
+        );
+    }
+
+    msg_data_req->seq_id += 1;
 
     if (send_result < 0) {
         LOG_ERROR << "Msg data req send error." << strerror(errno);
         return -1;
     }
 
-    LOG_TRACE << "Msg data req sent, arr len: " << msg_data_req->arr_len;
+    LOG_TRACE << "Msg data req sent, id :" << msg_data_req->seq_id << ", arr len: " << msg_data_req->arr_len;
     return 0;
 }
 
@@ -65,6 +71,7 @@ int data_request_process(const int& socket_fd) {
     MsgDataReq* msg_data_req = reinterpret_cast<MsgDataReq*>(g_MSG_BUFFER);
     msg_data_req->msg_type = MSG_DATA_REQ;
     msg_data_req->client_id = g_CLIENT_ID;
+    msg_data_req->seq_id = 0;
     size_t* arr_ptr = reinterpret_cast<size_t*>(&msg_data_req->block_pos_arr);
     size_t arr_len;
 
@@ -72,7 +79,8 @@ int data_request_process(const int& socket_fd) {
         {
             std::lock_guard<std::mutex> l(g_FILE_BLOCKS_SET_LOCK);
             if (g_FILE_BLOCKS_SET.size() == 0) {
-                break;
+                g_FINISHED = true;
+                return 0;
             }
             blocks = g_FILE_BLOCKS_SET;
         }
@@ -91,13 +99,8 @@ int data_request_process(const int& socket_fd) {
             msg_data_req->arr_len = arr_len;
             send_data_req(socket_fd, msg_data_req);
         }
-
-        int temp;
-        std::cin >> temp;
-
+        sleep(1);
     }
-
-    return 0;
 }
 
 
@@ -162,7 +165,7 @@ int receive_thread_process(const int& socket_fd) {
             return -1;
         }
 
-        LOG_TRACE << "Receive msg size: " << received_size ;
+//        LOG_TRACE << "Receive msg size: " << received_size ;
 
         switch(msg_ptr->msg_type) {
             case MSG_DATA_RSP:
@@ -237,7 +240,7 @@ int client_main_process() {
     LOG_INFO << "Server send to port: " << msg_reg_req->server_send_to_port;
 
     ssize_t sended_size;
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 200; ++i) {
          sended_size = sendto(
                 send_socket,
                 msg_reg_req,
@@ -313,11 +316,12 @@ int client_main_process() {
         );
     }
 
-    for(auto&& iter: threads) {
-        iter.join();
-    }
-
+    g_FINISHED = false;
     data_req_thread.join();
+
+    if (g_FINISHED) {
+        LOG_INFO << "Success";
+    }
 
     return 0;
 }

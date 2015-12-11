@@ -32,7 +32,7 @@ public:
 
 private:
 
-    struct sockaddr_storage address_;
+    sockaddr_storage address_;
     socklen_t address_len_;
 
     InetAddress() = delete;

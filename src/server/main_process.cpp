@@ -2,6 +2,7 @@
 
 #include <mutex>
 #include <map>
+#include <set>
 #include <thread>
 #include <vector>
 #include <cstdlib>
@@ -37,6 +38,9 @@ public:
 
 std::mutex g_CLIENT_MAP_LOCK;
 std::map<ClientID, ClientInfo> g_CLIENT_MAP;
+
+std::mutex g_DATA_REQ_SET_LOCK;
+std::set<std::pair<ClientID, uint32_t>> g_DATA_REQ_SET;
 
 __thread char* g_MSG_BUFFER;
 
@@ -98,16 +102,29 @@ int new_client_process(
 }
 
 int data_process(const int& socket_fd, MsgDataReq& msg) {
-    LOG_TRACE << "Get data req: ";
-    LOG_TRACE << "Client id: "          << msg.client_id;
-    LOG_TRACE << "Data arr len: "       << msg.arr_len;
 
     g_CLIENT_MAP_LOCK.lock();
     auto result = g_CLIENT_MAP.find(msg.client_id);
-    g_CLIENT_MAP_LOCK.unlock();
     if (result == g_CLIENT_MAP.end()) {
         return -1;
     }
+    g_CLIENT_MAP_LOCK.unlock();
+
+    g_DATA_REQ_SET_LOCK.lock();
+    auto set_result = g_DATA_REQ_SET.find(std::make_pair(msg.client_id, msg.seq_id));
+    if (set_result == g_DATA_REQ_SET.end()) {
+        g_DATA_REQ_SET.insert(std::make_pair(msg.client_id, msg.seq_id));
+    }
+    else {
+        return -1;
+    }
+    g_DATA_REQ_SET_LOCK.unlock();
+
+    LOG_TRACE << "Get data req: ";
+    LOG_TRACE << "Client id: "          << msg.client_id;
+    LOG_TRACE << "Msg id: "          << msg.seq_id;
+    LOG_TRACE << "Data arr len: "       << msg.arr_len;
+
 
     ClientInfo client_info = result->second;
 
@@ -265,6 +282,8 @@ int main_process() {
         LOG_FATAL << "Socket bind failed. " << strerror(errno);
         exit(-1);
     }
+
+    g_DATA_REQ_SET.clear();
 
     std::vector<std::thread> threads;
 

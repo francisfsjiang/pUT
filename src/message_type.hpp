@@ -53,6 +53,7 @@ struct MsgClientClose{
 struct MsgDataReq {
     uint8_t msg_type;
     ClientID client_id;
+    uint32_t seq_id;
     size_t arr_len;
     size_t block_pos_arr[k_MAX_DATA_REQ_ARR_LEN];
 };
